@@ -175,5 +175,4 @@ def plot_hexbin(
     )
     fig.add_artist(leg_classes)
     fig.add_artist(leg_kurt)
-    #plt.show()
-    return None
+    return fig, axes
