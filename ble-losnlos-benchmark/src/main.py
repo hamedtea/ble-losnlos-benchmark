@@ -19,10 +19,23 @@ from src.ML_classification.mean_std_summary import mean_std_summary
 from src.plotters.plot_hexbin_all_datasets import plot_hexbin_all_datasets
 from src.plotters.learning_curve_visualizer import learning_curve_visualizer
 
+from src.plotters.plot_all_performnce_metrics import plot_all_performance_metrics
+from src.plotters.plot_all_timing_metrics import plot_all_timing_metrics
 
+from src.save_results import save_ml_results, save_experiment_results
+
+from src.helpers.selected_summary import selected_pipeline_latex_table
 
 import matplotlib.pyplot as plt
 import numpy as np
+import os
+
+out_dir = "results/figures"
+os.makedirs(out_dir, exist_ok=True)
+
+table_dir = "results/tables"
+os.makedirs(table_dir, exist_ok=True)
+
 
 def main():
     # load raw data
@@ -171,6 +184,35 @@ def main():
     print("\nMean ± STD across datasets:")
     print(df_combined)
 
+    df_selected, latex_table = selected_pipeline_latex_table(
+    df_combined,
+    )
+    # Save CSV
+    df_selected.to_csv(
+        os.path.join(table_dir, "df_selected.csv"),
+        index=False,
+    )
+
+    # Save LaTeX table
+    df_selected.to_latex(
+        os.path.join(table_dir, "df_selected.tex"),
+        index=False,
+        escape=False,
+    )
+
+    print(f"Tables saved in: {table_dir}")
+
+    save_ml_results(
+    trained_models_all=trained_models_all,
+    model_results_all=model_results_all,
+    out_dir="./models",
+    )   
+    save_experiment_results(
+    kernel_results=kernel_results,
+    best_params_all=best_params_all,
+    summary_results_all=summary_results_all,
+    )
+
     # --------------------------------------------------
     # PLOTTERS
     # --------------------------------------------------
@@ -184,39 +226,47 @@ def main():
     figures_7k = plot_hexbin_all_datasets(
     data=data_7k
     )
-    print("Reached plotting section")
-    print("Open figures:", plt.get_fignums())
+    
 
-
-
-
+    # --------------------------------------------------
+    # Plotting Learning curves
+    # --------------------------------------------------
     learning_results = {
     "room": lc_room,
     "office": lc_office,    
     }
-    learning_curve_visualizer(
+    figure_learning_curve = learning_curve_visualizer(
         learning_results=learning_results,
         title="Learning Curves: 3K to 7K Dataset Size",
     )
 
+    # --------------------------------------------------
+    # Plotting Performance lilipot plots (Selected)
+    # --------------------------------------------------
+    figure_performance_metric = plot_all_performance_metrics(summary_results_all)
+    timing_figures = plot_all_timing_metrics(summary_results_all)
 
+
+    print("Reached plotting section")
     for num in plt.get_fignums():
         fig = plt.figure(num)
-        print(f"Figure {num}: {fig}")
-    
+        fig.savefig(
+            f"{out_dir}/figure_{num}.png",
+            dpi=300,
+            bbox_inches="tight",
+            pad_inches=0.13,
+        )
+    print(
+        f"Saved figure {num}"
+        )
+        
     plt.show(block=True)
 
+    df_selected, latex_table = selected_pipeline_latex_table(
+    f_combined,
+    )
 
-    return {
-        "split_3k": split_3k,
-        "split_7k": split_7k,
-        "arrays_3k": arrays_3k,
-        "arrays_7k": arrays_7k,
-        "labels_3k": labels_3k,
-        "labels_7k": labels_7k,
-        "data_3k": data_3k,
-        "data_7k": data_7k,
-    }, kernel_results, best_params_all, trained_models_all, model_results_all,  summary_results_all 
+    return 
     
 
 

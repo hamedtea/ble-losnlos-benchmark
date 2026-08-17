@@ -1,9 +1,8 @@
+Os
 numpy
 pandas
 scikit-learn
 joblib
 scipy
 matplotlib
-openpyxl
-jupyter
 pathlib
